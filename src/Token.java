@@ -7,12 +7,24 @@ public class Token {
     private static final int TOKEN_LENGTH = 5;
     String token;
     Date produce;
+    Account account;
     static ArrayList<Token> tokens = new ArrayList<>();
     public Token(Account account) {
         this.token = createToken(TOKEN_LENGTH);
         produce = new Date();
+        this.account = account;
         tokens.add(this);
-        account.setToken (this);
+    }
+
+    public static Token getTokenById(String tokenId) {
+        for (Token t : tokens){
+            if (t.getId().equals(tokenId)) return t;
+        }
+        return null;
+    }
+
+    private String getId() {
+        return token;
     }
 
     public boolean isTokenValid(){
@@ -37,4 +49,7 @@ public class Token {
         return string;
     }
 
+    public Account getAccount() {
+        return account;
+    }
 }
