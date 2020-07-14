@@ -11,16 +11,18 @@ public class Receipt {
     private static ArrayList <Receipt> receipts = new ArrayList<>();
     private boolean paid;
 
-    public Receipt(int money, Account source, Account destination, String description){
+    public Receipt(Token token,int money, Account source, Account destination, String description) throws Exception {
         this.money = money;
         this.source = source;
         this.destination = destination;
         this.description = description;
         this.id = createId(RECEIPT_ID_LENGTH);
         this.paid=false;
+        if (source!=null&&!token.getAccount().equals(source)) throw new Exception("token is invalid");
+        receipts.add(this);
     }
 
-    public void execute(){
+    public void execute() throws Exception {
 
     }
 
@@ -58,8 +60,10 @@ public class Receipt {
         paid = true;
     }
 
-    public static void pay(String id){
-        getReceiptById(id).execute();
+    public static void pay(String id) throws Exception {
+        Receipt r = getReceiptById(id);
+        if (r==null) throw new Exception("invalid receipt id");
+        r.execute();
     }
 
     private String getId() {

@@ -1,9 +1,9 @@
 public class MoveReceipt extends Receipt {
-    public MoveReceipt(int money, Account source, Account destination, String description) {
-        super(money, source, destination, description);
+    public MoveReceipt(Token token,int money, Account source, Account destination, String description) throws Exception {
+        super(token ,money, source, destination, description);
     }
 
-    public void execute(){
+    public void execute() throws Exception {
         source.withdraw(money);
         destination.deposit(money);
     }

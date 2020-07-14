@@ -1,3 +1,4 @@
+import java.security.SecureRandom;
 import java.util.ArrayList;
 
 public class Account {
@@ -11,7 +12,7 @@ public class Account {
     static ArrayList<Account> accounts = new ArrayList<>();
 
     public Account(String firstName, String lastName, String user, String password,String confirmPass) throws Exception {
-        if (!isUsernameAvail(user)) throw new Exception("username is not available");
+        if (isUsernameUsed(user)) throw new Exception("username is not available");
         if (!password.equals(confirmPass)) throw new Exception ("passwords do not match");
         this.firstName = firstName;
         this.lastName = lastName;
@@ -22,7 +23,7 @@ public class Account {
         System.out.println(id);
     }
 
-    public static boolean isUsernameAvail(String username) {
+    public static boolean isUsernameUsed(String username) {
         for (Account a : accounts){
             if (a.getUser().equals(username)) return true;
         }

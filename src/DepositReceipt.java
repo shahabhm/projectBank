@@ -1,7 +1,7 @@
 public class DepositReceipt extends Receipt {
 
-    public DepositReceipt(int money, Account destination, String description) {
-        super(money, null, destination, description);
+    public DepositReceipt(Token token,int money, Account destination, String description) throws Exception {
+        super(token,money, null, destination, description);
     }
 
     public void execute(){

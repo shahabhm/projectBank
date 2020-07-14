@@ -23,7 +23,7 @@ public class Token {
         return null;
     }
 
-    private String getId() {
+    String getId() {
         return token;
     }
 
