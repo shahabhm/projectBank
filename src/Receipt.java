@@ -1,7 +1,7 @@
 import java.security.SecureRandom;
 import java.util.ArrayList;
 
-public class Receipt {
+public abstract class Receipt {
     private static final int RECEIPT_ID_LENGTH = 5;
     int money;
     String id;

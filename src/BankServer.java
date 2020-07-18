@@ -17,6 +17,7 @@ public class BankServer extends Thread {
     boolean debug;
     Scanner scanner;
     Formatter formatter;
+
     public BankServer(Socket socket, Bank bank , boolean debug) throws IOException {
         this.socket = socket;
         os = socket.getOutputStream();
@@ -44,13 +45,16 @@ public class BankServer extends Thread {
             else if (command.startsWith("create_receipt ")) createReceipt(command);
             else if (command.startsWith("pay ")) payReceipt(command);
             else if (command.startsWith("get_balance ")) getBalance(command);
+            else if (command.startsWith("get_transactions ")) getTransactions(command);
             else if (command.equals("exit")) exit();
             else throw new InvalidInputException();
 
         } catch (Exception e) {
-            if (e instanceof IOException) System.out.println("close error");
-            else System.err.println(e.getMessage());
+            sendToCustomer(e.getMessage()); // todo must fix what happens when close the app
         }
+    }
+
+    private void getTransactions(String command) throws Exception {
     }
 
     private void getBalance(String command) throws Exception {
@@ -58,8 +62,13 @@ public class BankServer extends Thread {
         Matcher matcher = pattern.matcher(command);
         if (!matcher.find()) throw new InvalidInputException();
         Account account = getAccountFromToken (matcher.group(1));
-        System.out.println(account.getMoney());
+        sendToCustomer(Integer.toString(account.getMoney()));
     }//done
+
+    private void sendToCustomer(String message) {
+        formatter.format(message + "\n");
+        formatter.flush();
+    }
 
     private void createAccount(String command) throws Exception {
         Pattern pattern = Pattern.compile("^create_account (\\w+) (\\w+) (\\w+) (\\w+) (\\w+)$");
@@ -76,7 +85,7 @@ public class BankServer extends Thread {
             throw new Exception("invalid username or password");
         Token t = new Token(Account.getAccByName(matcher.group(1)));
         tokenAccountHashMap.put(t,t.getAccount());
-        System.out.println(t.getId());
+        sendToCustomer(t.getId());
     }//done
 
     private void createReceipt(String command) throws Exception {
