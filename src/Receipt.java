@@ -20,6 +20,7 @@ public class Receipt {
         this.paid=false;
         if (source!=null&&!token.getAccount().equals(source)) throw new Exception("token is invalid");
         receipts.add(this);
+        System.out.println(id);
     }
 
     public void execute() throws Exception {

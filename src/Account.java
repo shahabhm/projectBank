@@ -12,15 +12,12 @@ public class Account {
     static ArrayList<Account> accounts = new ArrayList<>();
 
     public Account(String firstName, String lastName, String user, String password,String confirmPass) throws Exception {
-        if (isUsernameUsed(user)) throw new Exception("username is not available");
-        if (!password.equals(confirmPass)) throw new Exception ("passwords do not match");
         this.firstName = firstName;
         this.lastName = lastName;
         this.user = user;
         this.password = password;
         this.id = createId();
         accounts.add(this);
-        System.out.println(id);
     }
 
     public static boolean isUsernameUsed(String username) {
@@ -30,8 +27,21 @@ public class Account {
         return false;
     }
 
-    public static boolean doesAccountExist(String user) {
+    public static void createAccount(String firstName, String lastName, String user, String password,String confirmPass)throws Exception{
+        if (isUsernameUsed(user)) throw new Exception("username is not available");
+        if (!password.equals(confirmPass)) throw new Exception ("passwords do not match");
+        System.out.println(new Account(firstName,lastName,user,password,confirmPass).getId());
+    }
+
+    public static boolean doesUserExist(String user) {
         return getAccByName(user) != null;
+    }
+
+    public static boolean deosAccountIdExist(String id){
+        for (Account a : accounts){
+            if (a.getId().equals(id))return true;
+        }
+        return false;
     }
 
     public static boolean checkUserPass(String user , String password){

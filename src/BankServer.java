@@ -1,45 +1,55 @@
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.PasswordAuthentication;
-import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
+import java.util.Formatter;
 import java.util.HashMap;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class BankClient extends Thread {
-    HashMap<Token,Account> tokenAccountHashMap = new HashMap<>();
+public class BankServer extends Thread {
+    private static HashMap<Token,Account> tokenAccountHashMap = new HashMap<>();
     Socket socket;
     InputStream is;
     OutputStream os;
-    private Object Bank;
-
-    public BankClient(Socket socket) throws IOException {
-        is = socket.getInputStream();
+    private Bank bank;
+    boolean debug;
+    Scanner scanner;
+    Formatter formatter;
+    public BankServer(Socket socket, Bank bank , boolean debug) throws IOException {
+        this.socket = socket;
         os = socket.getOutputStream();
-        System.out.println(this);
+        is = socket.getInputStream();
+        scanner = new Scanner(is);
+        formatter = new Formatter(os);
+        this.bank = bank;
+        this.debug = debug;
     }
-
 
     @Override
     public void run() {
-        while (true) doCommand();
+        formatter.format("hello " + getName().replaceFirst("Thread-","") + "\n");
+        formatter.flush();
+        while (true) { try { doCommand(); } catch (Exception e) { break; } }
     }
 
-    private void doCommand() {
-        String command = new Scanner(is).nextLine();
+    private void doCommand() throws Exception {
+        String command = scanner.nextLine();
         try {
+            debugPrint("client "+this.getName().replaceFirst("Thread-","")+
+                    "  :  " + command);
             if (command.startsWith("create_account ")) createAccount(command);
             else if (command.startsWith("get_token ")) getToken(command);
             else if (command.startsWith("create_receipt ")) createReceipt(command);
             else if (command.startsWith("pay ")) payReceipt(command);
             else if (command.startsWith("get_balance ")) getBalance(command);
+            else if (command.equals("exit")) exit();
             else throw new InvalidInputException();
+
         } catch (Exception e) {
-            System.err.println(e.getMessage());
+            if (e instanceof IOException) System.out.println("close error");
+            else System.err.println(e.getMessage());
         }
     }
 
@@ -55,9 +65,8 @@ public class BankClient extends Thread {
         Pattern pattern = Pattern.compile("^create_account (\\w+) (\\w+) (\\w+) (\\w+) (\\w+)$");
         Matcher matcher = pattern.matcher(command);
         if (!matcher.find()) throw new InvalidInputException();
-        new Account (matcher.group(1),matcher.group(2),matcher.group(3),matcher.group(4),matcher.group(5));
-    }//done just need to change the
-    // way of returning the id
+        Account.createAccount(matcher.group(1),matcher.group(2),matcher.group(3),matcher.group(4),matcher.group(5));
+    }//done
 
     private void getToken(String command) throws Exception{
         Pattern pattern = Pattern.compile("^get_token (\\w+) (\\w+)$");
@@ -72,7 +81,8 @@ public class BankClient extends Thread {
 
     private void createReceipt(String command) throws Exception {
         Pattern pattern = Pattern.compile(
-                "^create_receipt (\\w+) (\\w+) (-{0,1}\\d+\\.{0,1}\\d*$) (\\S+) (\\S+)(\\.*)" //fixme regex
+                //token type money dest source description
+                "^create_receipt (\\w+) (\\w+) (-{0,1}\\d+\\.{0,1}\\d*) (\\S+) (\\S+)(\\.*)" //fixme regex
         );
         Matcher matcher = pattern.matcher(command);
         if (!matcher.find()) throw new Exception("invalid parameters passed");
@@ -104,7 +114,7 @@ public class BankClient extends Thread {
 //token type money sor des desc
     private void checkCreateReceipt(String command) throws Exception {
         Pattern pattern = Pattern.compile(
-                "^create_receipt (\\w+) (\\w+) (-{0,1}\\d+\\.{0,1}\\d*$) (\\S+) (\\S+)(\\.*)$" //fixme regex
+                "^create_receipt (\\w+) (\\w+) (-{0,1}\\d+\\.{0,1}\\d*) (\\S+) (\\S+)(\\.*)$" //fixme regex
         );
         Matcher matcher = pattern.matcher(command);
         matcher.find();
@@ -119,10 +129,11 @@ public class BankClient extends Thread {
         }catch (Exception e){
             throw new Exception("invalid money");
         }
+        if (matcher.group(4).equals("-1"));
+        else if (!Account.deosAccountIdExist(matcher.group(4))) throw new Exception("source account id is invalid");
 
-        if (!Account.doesAccountExist(matcher.group(4))) throw new Exception("source account id is invalid");
-
-        if (!Account.doesAccountExist(matcher.group(5))) throw new Exception("dest account id is invalid");
+        if (matcher.group(5).equals("-1"));
+        else if (!Account.deosAccountIdExist(matcher.group(5))) throw new Exception("dest account id is invalid");
 
         if (matcher.group(5).equals(matcher.group(4))) throw new Exception ("equal source and dest account");
 
@@ -142,4 +153,16 @@ public class BankClient extends Thread {
         if (!token.isTokenValid()) throw new Exception("token expired");
         return tokenAccountHashMap.get(token);
     }//done
+
+    private void exit() throws IOException {
+        socket.close();
+        bank.reduceClientCount();
+        debugPrint("connected Clients : " +Integer.toString( bank.getConnectedClients()));
+    }
+
+    private void debugPrint(String text){
+        if (debug){
+            System.out.println(text);
+        }
+    }
 }
