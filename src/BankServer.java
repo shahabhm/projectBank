@@ -2,11 +2,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import com.gilecode.yagson.*;
 
 public class BankServer extends Thread {
     private static HashMap<Token,Account> tokenAccountHashMap = new HashMap<>();
@@ -55,6 +57,38 @@ public class BankServer extends Thread {
     }
 
     private void getTransactions(String command) throws Exception {
+        Pattern pattern = Pattern.compile("^get_transactions (\\w+) (\\.+)$");
+        Matcher matcher = pattern.matcher(command);
+        if (!matcher.find()) throw new InvalidInputException();
+        Account account = getAccountFromToken(matcher.group(1));
+        if (matcher.group(2).equals("+")) sendToCustomer(
+                convertTransactionsToJson(Receipt.getSelectedReceipts(account,matcher.group(2)))
+        );
+        else if (matcher.group(2).equals("-"))sendToCustomer(
+                convertTransactionsToJson(Receipt.getSelectedReceipts(account, matcher.group(2)))
+        );
+        else if (matcher.group(2).equals("*"))sendToCustomer(
+            convertTransactionsToJson(Receipt.getSelectedReceipts(account, matcher.group(2)))
+        );
+        else throw new InvalidInputException();
+    }
+
+    private String convertTransactionsToJson(ArrayList<Receipt> receipts){
+        YaGson yaGson = new YaGson();
+        String json = "*";
+
+        for (Receipt r : receipts){
+            json = json.concat(formatTransactionJson(yaGson.toJson(r)));
+            json = json.concat("*");
+        }
+        json = json.replaceFirst("\\*","");
+        return json;
+    }
+
+    private String formatTransactionJson(String json){
+        json = json.replaceFirst("\\{\"@type\":\"[^\"]+\",\"@val\":" , "");
+        json = json.replaceFirst("\\}" , "");
+        return json;
     }
 
     private void getBalance(String command) throws Exception {

@@ -67,6 +67,35 @@ public abstract class Receipt {
         r.execute();
     }
 
+    public static ArrayList<Receipt> getSelectedReceipts(Account account, String type) throws Exception {
+        ArrayList<Receipt > selection = new ArrayList<>();
+        if (type.equals("+"))for (Receipt r : receipts){
+            if (r.destination.equals(account)) selection.add(r);
+
+        }
+        else if (type.equals("-")){
+            for (Receipt receipt : receipts) {
+                if (receipt.source.equals(account)) selection.add(receipt);
+            }
+        }
+        else if (type.equals("*")){
+            for (Receipt receipt : receipts) {
+                if (receipt.source.equals(account)||receipt.destination.equals(account)){
+                    selection.add(receipt);
+                }
+            }
+        }
+        else{
+            Receipt receipt = getReceiptById(type);
+            if (receipt==null) throw new Exception("invalid receipt id");
+            if (receipt.destination.equals(account)||
+            receipt.source.equals(account));
+            else throw new Exception("invalid receipt id");
+            selection.add(receipt);
+        }
+    return selection;
+    }
+
     private String getId() {
         return this.id;
     }
