@@ -6,5 +6,6 @@ public class DepositReceipt extends Receipt {
 
     public void execute(){
         destination.deposit(money);
+        this.paid=true;
     }
 }

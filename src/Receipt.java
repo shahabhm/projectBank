@@ -1,27 +1,27 @@
+import java.io.IOException;
 import java.io.Serializable;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 
 public abstract class Receipt implements Saveable , Serializable {
-    private static final int RECEIPT_ID_LENGTH = 5;
+    String type;
+    private static final int RECEIPT_ID_LENGTH = 2;
     int money;
     String id;
     Account source;
     Account destination;
     String description;
-    private static ArrayList <Receipt> receipts = new ArrayList<>();
-    private boolean paid;
+    boolean paid;
+    private transient static ArrayList <Receipt> receipts = new ArrayList<>();
 
-    public Receipt(Token token,int money, Account source, Account destination, String description) throws Exception {
+    public Receipt(Token token,int money, Account source, Account destination, String description) throws IOException {
         this.money = money;
         this.source = source;
         this.destination = destination;
         this.description = description;
         this.id = createId(RECEIPT_ID_LENGTH);
         this.paid=false;
-        if (source!=null&&!token.getAccount().equals(source)) throw new Exception("token is invalid");
         receipts.add(this);
-        System.out.println(id);
         ObjectSaver.serializeDataOut(this , "rec");
     }
 

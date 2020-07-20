@@ -3,19 +3,20 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 
 public class Account implements Saveable, Serializable {
+
     String firstName;
     String lastName;
-    String user;
+    String userName;
     String password;
     String id;
     int money;
 
-    static ArrayList<Account> accounts = new ArrayList<>();
+    static transient ArrayList<Account> accounts = new ArrayList<>();
 
-    public Account(String firstName, String lastName, String user, String password,String confirmPass) throws Exception {
+    public Account(String firstName, String lastName, String userName, String password, String confirmPass) throws Exception {
         this.firstName = firstName;
         this.lastName = lastName;
-        this.user = user;
+        this.userName = userName;
         this.password = password;
         this.id = createId();
         accounts.add(this);
@@ -24,13 +25,13 @@ public class Account implements Saveable, Serializable {
 
     public static boolean isUsernameUsed(String username) {
         for (Account a : accounts){
-            if (a.getUser().equals(username)) return true;
+            if (a.getUserName().equals(username)) return true;
         }
         return false;
     }
 
     public static boolean doesUserExist(String user) {
-        return getAccByName(user) != null;
+        return getAccByUserName(user) != null;
     }
 
     public static boolean doesAccountIdExist(String id){
@@ -41,31 +42,38 @@ public class Account implements Saveable, Serializable {
     }
 
     public static boolean checkUserPass(String user , String password){
-        if (Account.getAccByName(user)==null) return false;
-        if (getAccByName(user).password.equals(password))return true;
+        if (Account.getAccByUserName(user)==null) return false;
+        if (getAccByUserName(user).password.equals(password))return true;
         return false;
     }
 
-    public static Account getAccByName(String user) {
+    public static Account getAccByUserName(String userName) {
         for (Account a : accounts){
-            if (a.getUsername().equals(user)){
+            if (a.getUsername().equals(userName)){
                 return a;
             }
         }
         return null;
     }
 
+    public static Account getAccById(String id){
+        for (Account a : accounts){
+            if (a.getId().equals(id))return a;
+        }
+        return null;
+    }
+
     public static boolean userPassValidation(String user , String pass){
-        if (getAccByName(user)==null) return false;
-        return getAccByName(user).password.equals(pass);
+        if (getAccByUserName(user)==null) return false;
+        return getAccByUserName(user).password.equals(pass);
     }
 
     private String getUsername() {
-        return user;
+        return userName;
     }
 
-    public String getUser() {
-        return user;
+    public String getUserName() {
+        return userName;
     }
 
     public void deposit(int amount){
@@ -97,7 +105,7 @@ public class Account implements Saveable, Serializable {
     }
 
     String createId(){
-        int len = 5;
+        int len = 2;
         String AB = "0123456789";
         SecureRandom rnd = new SecureRandom();
         StringBuilder sb = new StringBuilder( len );

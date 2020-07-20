@@ -6,5 +6,6 @@ public class MoveReceipt extends Receipt {
     public void execute() throws Exception {
         source.withdraw(money);
         destination.deposit(money);
+        this.paid = true;
     }
 }

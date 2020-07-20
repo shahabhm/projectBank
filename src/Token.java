@@ -4,7 +4,7 @@ import java.util.Date;
 import java.util.logging.StreamHandler;
 
 public class Token {
-    private static final int TOKEN_LENGTH = 5;
+    private static final int TOKEN_LENGTH = 2;
     String token;
     Date produce;
     Account account;

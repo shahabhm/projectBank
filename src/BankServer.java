@@ -57,7 +57,7 @@ public class BankServer extends Thread {
     }
 
     private void getTransactions(String command) throws Exception {
-        Pattern pattern = Pattern.compile("^get_transactions (\\w+) (\\.+)$");
+        Pattern pattern = Pattern.compile("^get_transactions (\\w+) (.+)$");
         Matcher matcher = pattern.matcher(command);
         if (!matcher.find()) throw new InvalidInputException();
         Account account = getAccountFromToken(matcher.group(1));
@@ -110,7 +110,9 @@ public class BankServer extends Thread {
         if (!matcher.find()) throw new InvalidInputException();
         if (Account.isUsernameUsed(matcher.group(3))) throw new Exception("username is not available");
         if (!matcher.group(4).equals(matcher.group(5))) throw new Exception ("passwords do not match");
-        new Account(matcher.group(1),matcher.group(2),matcher.group(3),matcher.group(4),matcher.group(5));
+        Account account = new Account(matcher.group(1),matcher.group(2),
+                matcher.group(3),matcher.group(4),matcher.group(5));
+        sendToCustomer(account.getId());
     }//done
 
     private void getToken(String command) throws Exception{
@@ -119,7 +121,7 @@ public class BankServer extends Thread {
         if (!matcher.find()) throw new InvalidInputException();
         if (!Account.userPassValidation(matcher.group(1),matcher.group(2)))
             throw new Exception("invalid username or password");
-        Token t = new Token(Account.getAccByName(matcher.group(1)));
+        Token t = new Token(Account.getAccByUserName(matcher.group(1)));
         tokenAccountHashMap.put(t,t.getAccount());
         sendToCustomer(t.getId());
     }//done
@@ -127,62 +129,60 @@ public class BankServer extends Thread {
     private void createReceipt(String command) throws Exception {
         Pattern pattern = Pattern.compile(
                 //token type money dest source description
-                "^create_receipt (\\w+) (\\w+) (-{0,1}\\d+\\.{0,1}\\d*) (\\S+) (\\S+)(\\.*)" //fixme regex
+                "^create_receipt (\\w+) (\\w+) (-{0,1}\\d+\\.{0,1}\\d*) (\\S+) (\\S+)(.*)$" //fixme regex
         );
         Matcher matcher = pattern.matcher(command);
         if (!matcher.find()) throw new Exception("invalid parameters passed");
-        if (!tokenAccountHashMap.containsKey(Token.getTokenById(matcher.group(1))))
-            throw new Exception("token is invalid");
-        Token token = Token.getTokenById(matcher.group(1));
+
+        String tokenString = matcher.group(1);
+        String type = matcher.group(2);
+        String moneyString = matcher.group(3);
+        String sourceString = matcher.group(4);
+        String destString = matcher.group(5);
+        String description  = matcher.group(6);
+        int money;
+        try {
+            money = Integer.parseInt(moneyString);
+            if (money<1) throw new Exception();
+        }catch (Exception e) {throw new Exception("invalid money");}
+
+        Token token = Token.getTokenById(tokenString);
+        if (token==null) throw new Exception("token is invalid");
         if (!token.isTokenValid()) throw new Exception("token expired");
-        checkCreateReceipt(command);
-        switch (matcher.group(2)){
+
+        if (Pattern.compile("[^a-zA-Z0-9_ ]").matcher(description).find())
+            throw new Exception("your input contains invalid characters");
+
+        Receipt receipt;
+        switch (type){
             case "deposit" :{
-                if (matcher.group(5).equals("-1")) throw new Exception("invalid account id");
-                new DepositReceipt(token,Integer.parseInt(matcher.group(3)),
-                    Account.getAccByName(matcher.group(5)),matcher.group(6));
+                if (destString.equals("-1")) throw new Exception("invalid account id");
+                if (!sourceString.equals("-1")) throw new Exception("invalid parameters passed");
+                receipt = new DepositReceipt(token,money,
+                    Account.getAccById(destString),description);
                 break;}
 
             case "withdraw" :{
-                    if (matcher.group(4).equals("-1")) throw new Exception("invalid account id");
-                    new WithdrawReceipt(token,Integer.parseInt(matcher.group(3)),
-                    Account.getAccByName(matcher.group(4)),matcher.group(6));
+                    if (sourceString.equals("-1")) throw new Exception("invalid account id");
+                    if (!destString.equals("-1")) throw new Exception("invalid parameters passed");
+                    Account source = Account.getAccById(sourceString);
+                    if (!token.getAccount().equals(source)) throw new Exception("token is invalid");
+                receipt = new WithdrawReceipt(token,money,
+                    source,description);
                 break;}
 
             case "move" : {
+                if (sourceString.equals(destString)) throw new Exception("equal source and dest account");
                 if (matcher.group(4).equals("-1")||matcher.group(5).equals("-1")) throw new Exception("invalid account id");
-                new MoveReceipt(token,Integer.parseInt(matcher.group(3)),Account.getAccByName(matcher.group(4)),
-                        Account.getAccByName(matcher.group(5)),matcher.group(6));}
+                Account source = Account.getAccById(sourceString);
+                if (!token.getAccount().equals(source)) throw new Exception("token is invalid");
+                receipt = new MoveReceipt(token,money,Account.getAccById(sourceString),
+                        Account.getAccById(destString),description);}
+            break;
+            default:
+                throw new Exception("invalid receipt type");
         }
-    }
-
-//token type money sor des desc
-    private void checkCreateReceipt(String command) throws Exception {
-        Pattern pattern = Pattern.compile(
-                "^create_receipt (\\w+) (\\w+) (-{0,1}\\d+\\.{0,1}\\d*) (\\S+) (\\S+)(\\.*)$" //fixme regex
-        );
-        Matcher matcher = pattern.matcher(command);
-        matcher.find();
-
-        if (!(matcher.group(2).equals("withdraw")||
-                matcher.group(2).equals("deposit")||
-                matcher.group(2).equals("move"))) throw new Exception("invalid receipt type");
-
-        try {
-            int x = Integer.parseInt(matcher.group(3));
-            if (x<1) throw new Exception();
-        }catch (Exception e){
-            throw new Exception("invalid money");
-        }
-        if (matcher.group(4).equals("-1"));
-        else if (!Account.doesAccountIdExist(matcher.group(4))) throw new Exception("source account id is invalid");
-
-        if (matcher.group(5).equals("-1"));
-        else if (!Account.doesAccountIdExist(matcher.group(5))) throw new Exception("dest account id is invalid");
-
-        if (matcher.group(5).equals(matcher.group(4))) throw new Exception ("equal source and dest account");
-
-        if (!matcher.group(6).matches("^\\w*$"))throw new Exception("your input contains invalid characters");
+        sendToCustomer(receipt.getId());
     }
 
     private void payReceipt(String command) throws Exception {
