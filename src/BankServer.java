@@ -52,6 +52,7 @@ public class BankServer extends Thread {
             else throw new InvalidInputException();
 
         } catch (Exception e) {
+            e.printStackTrace();
             sendToCustomer(e.getMessage()); // todo must fix what happens when close the app
         }
     }
@@ -68,18 +69,18 @@ public class BankServer extends Thread {
                 convertTransactionsToJson(Receipt.getSelectedReceipts(account, matcher.group(2)))
         );
         else if (matcher.group(2).equals("*"))sendToCustomer(
-            convertTransactionsToJson(Receipt.getSelectedReceipts(account, matcher.group(2)))
+                convertTransactionsToJson(Receipt.getSelectedReceipts(account, matcher.group(2)))
         );
-        else throw new InvalidInputException();
+        else sendToCustomer(convertTransactionsToJson(Receipt.getSelectedReceipts(account,matcher.group(2))));
     }
 
     private String convertTransactionsToJson(ArrayList<Receipt> receipts){
         YaGson yaGson = new YaGson();
-        String json = "*";
+        String json = "";
 
         for (Receipt r : receipts){
-            json = json.concat(formatTransactionJson(yaGson.toJson(r)));
             json = json.concat("*");
+            json = json.concat(formatTransactionJson(yaGson.toJson(r)));
         }
         json = json.replaceFirst("\\*","");
         return json;

@@ -3,7 +3,7 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 
 public class Account implements Saveable, Serializable {
-
+    private static final int ID_LENGTH = 5;
     String firstName;
     String lastName;
     String userName;
@@ -105,11 +105,10 @@ public class Account implements Saveable, Serializable {
     }
 
     String createId(){
-        int len = 2;
         String AB = "0123456789";
         SecureRandom rnd = new SecureRandom();
-        StringBuilder sb = new StringBuilder( len );
-        for( int i = 0; i < len; i++ )
+        StringBuilder sb = new StringBuilder( ID_LENGTH );
+        for( int i = 0; i < ID_LENGTH; i++ )
             sb.append( AB.charAt( rnd.nextInt(AB.length()) ) );
         String string = sb.toString();
         if (isIdUsed(string)) return createId();

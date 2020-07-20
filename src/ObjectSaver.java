@@ -14,7 +14,7 @@ public class ObjectSaver {
         FileOutputStream fos = new FileOutputStream(fileName);
         ObjectOutputStream oos = new ObjectOutputStream(fos);
         oos.writeObject(yaGson.toJson(ish));
-        System.out.println(yaGson.toJson(ish));
+        //System.out.println(yaGson.toJson(ish));
         oos.close();
     }
 

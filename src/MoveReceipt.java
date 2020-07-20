@@ -7,5 +7,6 @@ public class MoveReceipt extends Receipt {
         source.withdraw(money);
         destination.deposit(money);
         this.paid = true;
+        this.type = "move";
     }
 }

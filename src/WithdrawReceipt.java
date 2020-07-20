@@ -6,5 +6,6 @@ public class WithdrawReceipt extends Receipt {
     public void execute () throws Exception {
         source.withdraw(money);
         this.paid = true;
+        this.type = "withdraw";
     }
 }
