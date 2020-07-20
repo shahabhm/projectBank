@@ -108,7 +108,9 @@ public class BankServer extends Thread {
         Pattern pattern = Pattern.compile("^create_account (\\w+) (\\w+) (\\w+) (\\w+) (\\w+)$");
         Matcher matcher = pattern.matcher(command);
         if (!matcher.find()) throw new InvalidInputException();
-        Account.createAccount(matcher.group(1),matcher.group(2),matcher.group(3),matcher.group(4),matcher.group(5));
+        if (Account.isUsernameUsed(matcher.group(3))) throw new Exception("username is not available");
+        if (!matcher.group(4).equals(matcher.group(5))) throw new Exception ("passwords do not match");
+        new Account(matcher.group(1),matcher.group(2),matcher.group(3),matcher.group(4),matcher.group(5));
     }//done
 
     private void getToken(String command) throws Exception{
@@ -173,10 +175,10 @@ public class BankServer extends Thread {
             throw new Exception("invalid money");
         }
         if (matcher.group(4).equals("-1"));
-        else if (!Account.deosAccountIdExist(matcher.group(4))) throw new Exception("source account id is invalid");
+        else if (!Account.doesAccountIdExist(matcher.group(4))) throw new Exception("source account id is invalid");
 
         if (matcher.group(5).equals("-1"));
-        else if (!Account.deosAccountIdExist(matcher.group(5))) throw new Exception("dest account id is invalid");
+        else if (!Account.doesAccountIdExist(matcher.group(5))) throw new Exception("dest account id is invalid");
 
         if (matcher.group(5).equals(matcher.group(4))) throw new Exception ("equal source and dest account");
 

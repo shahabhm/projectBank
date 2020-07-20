@@ -1,7 +1,8 @@
+import java.io.Serializable;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 
-public class Account {
+public class Account implements Saveable, Serializable {
     String firstName;
     String lastName;
     String user;
@@ -18,6 +19,7 @@ public class Account {
         this.password = password;
         this.id = createId();
         accounts.add(this);
+        ObjectSaver.serializeDataOut(this , "acc");
     }
 
     public static boolean isUsernameUsed(String username) {
@@ -27,17 +29,11 @@ public class Account {
         return false;
     }
 
-    public static void createAccount(String firstName, String lastName, String user, String password,String confirmPass)throws Exception{
-        if (isUsernameUsed(user)) throw new Exception("username is not available");
-        if (!password.equals(confirmPass)) throw new Exception ("passwords do not match");
-        System.out.println(new Account(firstName,lastName,user,password,confirmPass).getId());
-    }
-
     public static boolean doesUserExist(String user) {
         return getAccByName(user) != null;
     }
 
-    public static boolean deosAccountIdExist(String id){
+    public static boolean doesAccountIdExist(String id){
         for (Account a : accounts){
             if (a.getId().equals(id))return true;
         }
@@ -94,6 +90,10 @@ public class Account {
 
     public int getMoney(){
         return money;
+    }
+
+    public static void addAccount (Account account){
+        accounts.add(account);
     }
 
     String createId(){

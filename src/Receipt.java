@@ -1,7 +1,8 @@
+import java.io.Serializable;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 
-public abstract class Receipt {
+public abstract class Receipt implements Saveable , Serializable {
     private static final int RECEIPT_ID_LENGTH = 5;
     int money;
     String id;
@@ -21,6 +22,7 @@ public abstract class Receipt {
         if (source!=null&&!token.getAccount().equals(source)) throw new Exception("token is invalid");
         receipts.add(this);
         System.out.println(id);
+        ObjectSaver.serializeDataOut(this , "rec");
     }
 
     public void execute() throws Exception {
@@ -96,7 +98,11 @@ public abstract class Receipt {
     return selection;
     }
 
-    private String getId() {
+    public static void addReceipt(Receipt r){
+        receipts.add(r);
+    }
+
+    public String getId() {
         return this.id;
     }
 }
