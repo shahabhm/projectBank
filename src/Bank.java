@@ -27,7 +27,7 @@ public class Bank {
         }
         ServerSocket serverSocket = new ServerSocket(port);
 
-        System.out.println("IP : 127.0.0.1\nPORT : 9090");
+        System.out.println("IP : 127.0.0.1\nPORT : " + port); // fixme for network
         while (true){
             new BankServer(serverSocket.accept(),this , debug).start();
             connectedClients++;
