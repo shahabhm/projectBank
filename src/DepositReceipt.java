@@ -4,7 +4,7 @@ public class DepositReceipt extends Receipt {
         super(token,money, null, destination, description, "deposit");
     }
 
-    public void execute(){
+    public void execute()throws Exception{
         Account.getAccById(destId).deposit(money);
         this.paid=true;
     }

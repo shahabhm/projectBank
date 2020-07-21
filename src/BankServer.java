@@ -1,3 +1,5 @@
+import com.gilecode.yagson.com.google.gson.Gson;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -8,9 +10,6 @@ import java.util.HashMap;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import com.gilecode.yagson.*;
-import com.gilecode.yagson.com.google.gson.Gson;
-import com.gilecode.yagson.com.google.gson.GsonBuilder;
 
 public class BankServer extends Thread {
     private static HashMap<Token,Account> tokenAccountHashMap = new HashMap<>();
@@ -34,7 +33,7 @@ public class BankServer extends Thread {
 
     @Override
     public void run() {
-        if (debug)sendToCustomer("hello " + getName().replaceFirst("Thread-","") + "\n");
+        if (debug)sendToCustomer("hello " + getName().replaceFirst("Thread-",""));
         while (true) { try { doCommand(); } catch (Exception e) { break; } }
     }
 
@@ -49,13 +48,19 @@ public class BankServer extends Thread {
             else if (command.startsWith("pay ")) payReceipt(command);
             else if (command.startsWith("get_balance ")) getBalance(command);
             else if (command.startsWith("get_transactions ")) getTransactions(command);
+            else if (command.startsWith("get_account_id ")) getAccountId(command);
             else if (command.equals("exit")) exit();
             else throw new InvalidInputException();
 
         } catch (Exception e) {
-            e.printStackTrace();
             sendToCustomer("ERR_"+e.getMessage());
         }
+    }
+
+    private void getAccountId(String command) throws Exception {
+        Matcher matcher = Pattern.compile("^get_account_id (\\w+)$").matcher(command);
+        if (!matcher.find()) throw new InvalidInputException();
+        sendToCustomer(getAccountFromToken(matcher.group(1)).getId());
     }
 
     private void getTransactions(String command) throws Exception {
@@ -78,20 +83,12 @@ public class BankServer extends Thread {
     private String convertTransactionsToJson(ArrayList<Receipt> receipts){
         String json = "";
         Gson gson = new Gson();
-                //new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
         for (Receipt r : receipts){
-            System.out.println(r);
             json = json+"*";
             System.out.println("togson " + gson.toJson(r));
             json = json + gson.toJson(r);
         }
-        return json.replaceFirst("\\*$","");
-    }
-
-    private String formatTransactionJson(String json){
-        json = json.replaceFirst("\\{\"@type\":\"[^\"]+\",\"@val\":" , "");
-        json = json.replaceFirst("\\}" , "");
-        return json;
+        return json.replaceFirst("^\\*","");
     }
 
     private void getBalance(String command) throws Exception {
@@ -114,7 +111,7 @@ public class BankServer extends Thread {
         if (Account.isUsernameUsed(matcher.group(3))) throw new Exception("username is not available");
         if (!matcher.group(4).equals(matcher.group(5))) throw new Exception ("passwords do not match");
         Account account = new Account(matcher.group(1),matcher.group(2),
-                matcher.group(3),matcher.group(4),matcher.group(5));
+                matcher.group(3),matcher.group(4));
         sendToCustomer(account.getId());
     }//done
 

@@ -16,7 +16,7 @@ public abstract class Receipt implements Saveable , Serializable {
 
 
     public Receipt(Token token,int money, Account source, Account destination
-            , String description, String type) throws IOException {
+            , String description, String type) throws Exception {
         this.money = money;
         if (source==null)this.sourceId = "-1";
         else this.sourceId = source.getId();
@@ -27,7 +27,7 @@ public abstract class Receipt implements Saveable , Serializable {
         this.paid=false;
         this.type = type;
         receipts.add(this);
-        new ObjectSaver(this , "rec").start();
+        save();
     }
 
     public void execute() throws Exception {
@@ -66,6 +66,7 @@ public abstract class Receipt implements Saveable , Serializable {
         if (r==null) throw new Exception("invalid receipt id");
         if (r.paid) throw new Exception("receipt is paid before");
         r.execute();
+        r.save();
     }
 
     public static ArrayList<Receipt> getSelectedReceipts(Account account, String type) throws Exception {
@@ -105,16 +106,10 @@ public abstract class Receipt implements Saveable , Serializable {
         return this.id;
     }
 
-    @Override
-    public String toString() {
-        return "Receipt{" +
-                "type='" + type + '\'' +
-                ", money=" + money +
-                ", id='" + id + '\'' +
-                ", sourceId='" + sourceId + '\'' +
-                ", destId='" + destId + '\'' +
-                ", description='" + description + '\'' +
-                ", paid=" + paid +
-                '}';
+    private void save() throws Exception {
+        try {ObjectSaver.serializeDataOut(this,"rec");}catch (Exception e){
+            throw new Exception("database error");
+        }
     }
+
 }

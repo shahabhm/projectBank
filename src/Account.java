@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.io.Serializable;
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -12,14 +13,15 @@ public class Account implements Saveable, Serializable {
 
     static transient ArrayList<Account> accounts = new ArrayList<>();
 
-    public Account(String firstName, String lastName, String userName, String password, String confirmPass) throws Exception {
+    public Account(String firstName, String lastName, String userName,
+                   String password) throws Exception {
         this.firstName = firstName;
         this.lastName = lastName;
         this.userName = userName;
         this.password = password;
         this.id = createId();
         accounts.add(this);
-        new ObjectSaver(this, "acc").start();
+        save();
     }
 
     public static boolean isUsernameUsed(String username) {
@@ -29,26 +31,9 @@ public class Account implements Saveable, Serializable {
         return false;
     }
 
-    public static boolean doesUserExist(String user) {
-        return getAccByUserName(user) != null;
-    }
-
-    public static boolean doesAccountIdExist(String id){
-        for (Account a : accounts){
-            if (a.getId().equals(id))return true;
-        }
-        return false;
-    }
-
-    public static boolean checkUserPass(String user , String password){
-        if (Account.getAccByUserName(user)==null) return false;
-        if (getAccByUserName(user).password.equals(password))return true;
-        return false;
-    }
-
     public static Account getAccByUserName(String userName) {
         for (Account a : accounts){
-            if (a.getUsername().equals(userName)){
+            if (a.getUserName().equals(userName)){
                 return a;
             }
         }
@@ -67,21 +52,19 @@ public class Account implements Saveable, Serializable {
         return getAccByUserName(user).password.equals(pass);
     }
 
-    private String getUsername() {
-        return userName;
-    }
-
     public String getUserName() {
         return userName;
     }
 
-    public void deposit(int amount){
+    public void deposit(int amount) throws Exception {
         money+=amount;
+        save();
     }
 
     public void withdraw(int amount) throws Exception {
         if (money<amount) throw new Exception("source account does not have enough money");
         money-=amount;
+        save();
     }
 
     public boolean isIdUsed(String string){
@@ -101,6 +84,14 @@ public class Account implements Saveable, Serializable {
 
     public static void addAccount (Account account){
         accounts.add(account);
+    }
+
+    public void save() throws Exception {
+        try {
+            ObjectSaver.serializeDataOut(this , "acc");
+        }catch (Exception e){
+            throw new Exception("database error");
+        }
     }
 
     String createId(){

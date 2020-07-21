@@ -7,31 +7,14 @@ import com.gilecode.yagson.YaGson;
 import com.gilecode.yagson.com.google.gson.JsonElement;
 import com.gilecode.yagson.com.google.gson.internal.$Gson$Preconditions;
 
-public class ObjectSaver extends Thread {
+public class ObjectSaver {
     static YaGson yaGson = new YaGson();
-    Saveable object;
-    String prefix;
-    public ObjectSaver(Saveable o, String s) {
-        object = o;
-        prefix = s;
-    }
 
-    @Override
-    public void run() {
-        while (true){try {
-            serializeDataOut(object , prefix);
-            Thread.sleep(2000);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }}
-    }
-
-    private void serializeDataOut(Saveable ish , String folder)throws IOException {
+    public static void serializeDataOut(Saveable ish, String folder)throws IOException {
         String fileName= "resources/"+folder + "/" + ish.getId();
         FileOutputStream fos = new FileOutputStream(fileName);
         ObjectOutputStream oos = new ObjectOutputStream(fos);
         oos.writeObject(yaGson.toJson(ish));
-        //System.out.println(yaGson.toJson(ish));
         oos.close();
     }
 
