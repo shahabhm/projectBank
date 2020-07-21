@@ -6,30 +6,28 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 
 public abstract class Receipt implements Saveable , Serializable {
-    @Expose String type;
-    @Expose int money;
-    @Expose String id;
-    @Expose String sourceId,destId;
-    @Expose String description;
-    @Expose boolean paid;
-    Account source;
-    Account destination;
+    String type;
+    int money;
+    String id;
+    String sourceId,destId;
+    String description;
+    boolean paid;
     private transient static ArrayList <Receipt> receipts = new ArrayList<>();
 
 
-    public Receipt(Token token,int money, Account source, Account destination, String description) throws IOException {
+    public Receipt(Token token,int money, Account source, Account destination
+            , String description, String type) throws IOException {
         this.money = money;
-        this.source = source;
         if (source==null)this.sourceId = "-1";
         else this.sourceId = source.getId();
-        this.destination = destination;
-        if (this.destination==null) destId = "-1";
+        if (destination==null) destId = "-1";
         else destId = destination.getId();
         this.description = description;
         this.id = createId(Bank.ID_LENGTH);
         this.paid=false;
+        this.type = type;
         receipts.add(this);
-        ObjectSaver.serializeDataOut(this , "rec");
+        new ObjectSaver(this , "rec").start();
     }
 
     public void execute() throws Exception {
@@ -73,18 +71,17 @@ public abstract class Receipt implements Saveable , Serializable {
     public static ArrayList<Receipt> getSelectedReceipts(Account account, String type) throws Exception {
         ArrayList<Receipt > selection = new ArrayList<>();
         if (type.equals("+"))for (Receipt r : receipts){
-            System.out.println(r.destination);
-            System.out.println(account);
-            if (account.equals(r.destination)) selection.add(r);
+            if (account.equals(Account.getAccById(r.destId))) selection.add(r);
         }
         else if (type.equals("-")){
             for (Receipt receipt : receipts) {
-                if (account.equals(receipt.source)) selection.add(receipt);
+                if (account.equals(Account.getAccById(receipt.sourceId))) selection.add(receipt);
             }
         }
         else if (type.equals("*")){
             for (Receipt receipt : receipts) {
-                if (account.equals(receipt.source)||account.equals(receipt.destination)){
+                if (account.equals(Account.getAccById(receipt.sourceId))||account.equals
+                        (Account.getAccById(receipt.destId))){
                     selection.add(receipt);
                 }
             }
@@ -92,8 +89,8 @@ public abstract class Receipt implements Saveable , Serializable {
         else{
             Receipt receipt = getReceiptById(type);
             if (receipt==null) throw new Exception("invalid receipt id");
-            if (account.equals(receipt.destination)||
-            account.equals(receipt.source));
+            if (account.equals(Account.getAccById(receipt.destId))||
+            account.equals(Account.getAccById(receipt.sourceId)));
             else throw new Exception("invalid receipt id");
             selection.add(receipt);
         }
@@ -118,8 +115,6 @@ public abstract class Receipt implements Saveable , Serializable {
                 ", destId='" + destId + '\'' +
                 ", description='" + description + '\'' +
                 ", paid=" + paid +
-                ", source=" + source +
-                ", destination=" + destination +
                 '}';
     }
 }

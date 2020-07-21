@@ -12,7 +12,7 @@ public class Bank {
     int port;
     boolean debug;
     int connectedClients = 0;
-    public static final int ID_LENGTH = 5;
+    public static final int ID_LENGTH = 2;
     public Bank(int port, boolean debug) {
         this.port = port;
         this.debug = debug;
@@ -20,7 +20,7 @@ public class Bank {
 
     public void run() throws Exception {
         try{
-            //readFiles();
+            readFiles();
         }catch (Exception e){
             e.printStackTrace();
             throw new Exception("there was a problem connectiong do database");
@@ -45,12 +45,16 @@ public class Bank {
     private void readFiles() throws IOException, ClassNotFoundException {
         yaGson = new YaGson();
         File dir = new File("resources/acc");
+        dir.mkdirs();
         for (File file : dir.listFiles()){
             Account.addAccount((Account) ObjectSaver.serializeDataIn(file.getAbsolutePath() , Account.class));
         }
         dir = new File("resources/rec");
+        dir.mkdirs();
         for (File file : dir.listFiles()){
-            Receipt.addReceipt((Receipt)ObjectSaver.serializeDataIn(file.getAbsolutePath(),Receipt.class));
+            Receipt r = (Receipt)ObjectSaver.serializeDataIn(file.getAbsolutePath(),Receipt.class);
+            System.out.println(r);
+            Receipt.addReceipt(r);
         }
     } // fixme
 }

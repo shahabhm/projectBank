@@ -1,12 +1,11 @@
 public class MoveReceipt extends Receipt {
     public MoveReceipt(Token token,int money, Account source, Account destination, String description) throws Exception {
-        super(token ,money, source, destination, description);
+        super(token ,money, source, destination, description, "move");
     }
 
     public void execute() throws Exception {
-        source.withdraw(money);
-        destination.deposit(money);
+        Account.getAccById(sourceId).withdraw(money);
+        Account.getAccById(destId).deposit(money);
         this.paid = true;
-        this.type = "move";
     }
 }

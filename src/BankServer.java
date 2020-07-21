@@ -77,10 +77,12 @@ public class BankServer extends Thread {
 
     private String convertTransactionsToJson(ArrayList<Receipt> receipts){
         String json = "";
-        Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
+        Gson gson = new Gson();
+                //new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
         for (Receipt r : receipts){
             System.out.println(r);
             json = json+"*";
+            System.out.println("togson " + gson.toJson(r));
             json = json + gson.toJson(r);
         }
         return json.replaceFirst("\\*$","");

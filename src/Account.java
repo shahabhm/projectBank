@@ -19,7 +19,7 @@ public class Account implements Saveable, Serializable {
         this.password = password;
         this.id = createId();
         accounts.add(this);
-        ObjectSaver.serializeDataOut(this , "acc");
+        new ObjectSaver(this, "acc").start();
     }
 
     public static boolean isUsernameUsed(String username) {
