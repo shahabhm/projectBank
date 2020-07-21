@@ -34,8 +34,7 @@ public class BankServer extends Thread {
 
     @Override
     public void run() {
-        formatter.format("hello " + getName().replaceFirst("Thread-","") + "\n");
-        formatter.flush();
+        if (debug)sendToCustomer("hello " + getName().replaceFirst("Thread-","") + "\n");
         while (true) { try { doCommand(); } catch (Exception e) { break; } }
     }
 
@@ -192,6 +191,7 @@ public class BankServer extends Thread {
         Matcher matcher = pattern.matcher(command);
         if (!matcher.find()) throw new InvalidInputException();
         Receipt.pay(matcher.group(1));
+        sendToCustomer("done successfully");
     }//done
 
     private Account getAccountFromToken(String tokenId) throws Exception {

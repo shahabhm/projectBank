@@ -73,8 +73,9 @@ public abstract class Receipt implements Saveable , Serializable {
     public static ArrayList<Receipt> getSelectedReceipts(Account account, String type) throws Exception {
         ArrayList<Receipt > selection = new ArrayList<>();
         if (type.equals("+"))for (Receipt r : receipts){
+            System.out.println(r.destination);
+            System.out.println(account);
             if (account.equals(r.destination)) selection.add(r);
-
         }
         else if (type.equals("-")){
             for (Receipt receipt : receipts) {

@@ -12,7 +12,7 @@ public class Bank {
     int port;
     boolean debug;
     int connectedClients = 0;
-    public static final int ID_LENGTH = 2;
+    public static final int ID_LENGTH = 5;
     public Bank(int port, boolean debug) {
         this.port = port;
         this.debug = debug;
@@ -22,9 +22,8 @@ public class Bank {
         try{
             //readFiles();
         }catch (Exception e){
-            //throw new Exception("there was a problem connectiong do database");
             e.printStackTrace();
-            System.err.println(e.getMessage());
+            throw new Exception("there was a problem connectiong do database");
         }
         ServerSocket serverSocket = new ServerSocket(port);
 
@@ -47,12 +46,11 @@ public class Bank {
         yaGson = new YaGson();
         File dir = new File("resources/acc");
         for (File file : dir.listFiles()){
-            System.out.println(file.getAbsolutePath());
             Account.addAccount((Account) ObjectSaver.serializeDataIn(file.getAbsolutePath() , Account.class));
         }
         dir = new File("resources/rec");
         for (File file : dir.listFiles()){
-            //Receipt.addReceipt((Receipt)ObjectSaver.serializeDataIn(file.getName()));
+            Receipt.addReceipt((Receipt)ObjectSaver.serializeDataIn(file.getAbsolutePath(),Receipt.class));
         }
-    }
+    } // fixme
 }

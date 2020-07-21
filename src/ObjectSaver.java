@@ -5,6 +5,7 @@ import java.util.Scanner;
 
 import com.gilecode.yagson.YaGson;
 import com.gilecode.yagson.com.google.gson.JsonElement;
+import com.gilecode.yagson.com.google.gson.internal.$Gson$Preconditions;
 
 public class ObjectSaver {
     static YaGson yaGson = new YaGson();
@@ -20,7 +21,9 @@ public class ObjectSaver {
 
     public static Object serializeDataIn(String fileName , Class t) throws IOException, ClassNotFoundException {
         FileInputStream fin = new FileInputStream(fileName);
-        Object iHandler = yaGson.fromJson(new Scanner(fin).nextLine(), t);
+        String c = new Scanner(fin).nextLine().replaceFirst("^.*\\{\"@type\"" , "{\"@type\"");
+        System.out.println(c);
+        Object iHandler = yaGson.fromJson(c, t);
         fin.close();
         return iHandler;
     }
