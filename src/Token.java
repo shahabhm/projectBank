@@ -4,13 +4,12 @@ import java.util.Date;
 import java.util.logging.StreamHandler;
 
 public class Token {
-    private static final int TOKEN_LENGTH = 5;
     String token;
     Date produce;
     Account account;
     static ArrayList<Token> tokens = new ArrayList<>();
     public Token(Account account) {
-        this.token = createToken(TOKEN_LENGTH);
+        this.token = createToken(Bank.ID_LENGTH);
         produce = new Date();
         this.account = account;
         tokens.add(this);

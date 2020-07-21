@@ -1,18 +1,19 @@
+import com.gilecode.yagson.com.google.gson.annotations.Expose;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 
 public abstract class Receipt implements Saveable , Serializable {
-    String type;
-    private static final int RECEIPT_ID_LENGTH = 5;
-    int money;
-    String id;
-    String sourceId,destId;
-    transient Account source;
-    transient Account destination;
-    String description;
-    boolean paid;
+    @Expose String type;
+    @Expose int money;
+    @Expose String id;
+    @Expose String sourceId,destId;
+    @Expose String description;
+    @Expose boolean paid;
+    Account source;
+    Account destination;
     private transient static ArrayList <Receipt> receipts = new ArrayList<>();
 
 
@@ -25,7 +26,7 @@ public abstract class Receipt implements Saveable , Serializable {
         if (this.destination==null) destId = "-1";
         else destId = destination.getId();
         this.description = description;
-        this.id = createId(RECEIPT_ID_LENGTH);
+        this.id = createId(Bank.ID_LENGTH);
         this.paid=false;
         receipts.add(this);
         ObjectSaver.serializeDataOut(this , "rec");
@@ -104,5 +105,20 @@ public abstract class Receipt implements Saveable , Serializable {
 
     public String getId() {
         return this.id;
+    }
+
+    @Override
+    public String toString() {
+        return "Receipt{" +
+                "type='" + type + '\'' +
+                ", money=" + money +
+                ", id='" + id + '\'' +
+                ", sourceId='" + sourceId + '\'' +
+                ", destId='" + destId + '\'' +
+                ", description='" + description + '\'' +
+                ", paid=" + paid +
+                ", source=" + source +
+                ", destination=" + destination +
+                '}';
     }
 }

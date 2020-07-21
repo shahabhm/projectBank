@@ -9,6 +9,8 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import com.gilecode.yagson.*;
+import com.gilecode.yagson.com.google.gson.Gson;
+import com.gilecode.yagson.com.google.gson.GsonBuilder;
 
 public class BankServer extends Thread {
     private static HashMap<Token,Account> tokenAccountHashMap = new HashMap<>();
@@ -53,7 +55,7 @@ public class BankServer extends Thread {
 
         } catch (Exception e) {
             e.printStackTrace();
-            sendToCustomer(e.getMessage()); // todo must fix what happens when close the app
+            sendToCustomer("ERR_"+e.getMessage());
         }
     }
 
@@ -75,15 +77,14 @@ public class BankServer extends Thread {
     }
 
     private String convertTransactionsToJson(ArrayList<Receipt> receipts){
-        YaGson yaGson = new YaGson();
         String json = "";
-
+        Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
         for (Receipt r : receipts){
-            json = json.concat("*");
-            json = json.concat(formatTransactionJson(yaGson.toJson(r)));
+            System.out.println(r);
+            json = json+"*";
+            json = json + gson.toJson(r);
         }
-        json = json.replaceFirst("\\*","");
-        return json;
+        return json.replaceFirst("\\*$","");
     }
 
     private String formatTransactionJson(String json){

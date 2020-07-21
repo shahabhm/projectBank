@@ -12,7 +12,7 @@ public class Bank {
     int port;
     boolean debug;
     int connectedClients = 0;
-
+    public static final int ID_LENGTH = 2;
     public Bank(int port, boolean debug) {
         this.port = port;
         this.debug = debug;
